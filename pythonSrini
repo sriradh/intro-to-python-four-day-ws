@@ -1,0 +1,129 @@
+# directory and file manipulations
+
+import os
+import time
+from datetime import datetime, timedelta
+current_time_in_epoch_format = time.time()
+# print(current_time_in_epoch_format)
+current_time_minus_20_mins_in_epoch_format = (datetime.now() - timedelta(minutes=20)).timestamp()
+# print(current_time_minus_20_mins_in_epoch_format)
+dirs = []
+path = "dbfs:/mnt/revenueaccounting/" + notebookEventName + "/raw_data/"
+os_path = "/dbfs/mnt/revenueaccounting/" + notebookEventName + "/raw_data/"
+final_files = []
+for files in os.listdir(os_path):
+    # print(files)
+    dirs.append(os_path + files)
+#print(dirs)    
+
+for dir in dirs:
+    avro_files = os.listdir(dir)
+    if len(avro_files) > 0:
+       for avro_file in avro_files:
+           # print(dir + '/' + avro_file)
+           file_timestamp_in_epoch_format = os.path.getctime(dir + '/' + avro_file)
+           # print(file_timestamp_in_epoch_format)
+           if file_timestamp_in_epoch_format <= current_time_minus_20_mins_in_epoch_format:
+              replaced_dir = dir.replace("/dbfs", "dbfs:")
+              final_files.append(replaced_dir + '/' + avro_file)            
+
+# scan through directories
+
+import os
+for root, subdirs, files in os.walk("/"):
+    print(root)
+    print(subdirs)
+    print(files)
+
+
+
+downloading_file = "/srv/incortadata/sbux-dev/parquet/incortatesting" + now_str + '.parquet'
+blob_file_name = "dummycrap/small.parquet"
+
+token_url = 'https://login.microsoftonline.com/ee69be27-d938-4eb5-8711-c5e69ca43718/oauth2/token'
+token_body = "grant_type=client_credentials&client_id=376568f6-b08d-42c3-ba04-d941af25aaa5&client_secret=pl-RTwGrB?EGuHLJ?4Cvc/Dhyc16VA5A&resource=https://storage.azure.com"
+token_result = requests.request(method="POST", url=token_url, data=token_body)
+
+if str(token_result.status_code) in "200":
+   print(token_result.text)
+
+json_result = json.loads(token_result.text)
+token = json_result["access_token"]
+
+
+## list blobs
+
+header = {
+            "Authorization" : "Bearer " + token,
+            "x-ms-date" : date,
+            "x-ms-version" : "2019-07-07"
+         }
+
+list_blob_url = "https://s00184npstastarsdetails.blob.core.windows.net/starscontainer?restype=container&comp=list&prefix=member_balances/FILE_DATE=2020-04-01/"
+list_blob_get_result = requests.request(method="GET", url=list_blob_url, headers=header)
+print(list_blob_get_result.text)
+
+## get blob
+
+get_specific_blob_url = "https://s00184npstastarsdetails.blob.core.windows.net/starscontainer/" + blob_file_name
+get_specific_blob_get_result = requests.request(method="GET", url=get_specific_blob_url, headers=header)
+print(get_specific_blob_get_result.content)
+
+with open(downloading_file, 'wb') as fd:
+    for chunk in get_specific_blob_get_result.iter_content(chunk_size=128):
+        fd.write(chunk)
+
+
+
+
+df = spark.read.parquet(downloading_file)
+save(df)
+
+#### BLOB OPERATIONS
+
+import subprocess
+import sys
+from datetime import datetime
+
+now = datetime.now()
+now_str = now.strftime("%Y%m%d")
+
+download_file_name = "/tmp/accruals" + now_str + ".parquet"
+
+blob_file_name = "starsRedeemedDetails/FILE_DATE=2020-04-01/part-00000-49136022-7446-4242-bbd5-d0e0a46927d8.c000.snappy.parquet"
+blob_file_name = "member_balances/FILE_DATE=2020-04-01/part-00000-bb18d54b-54e9-40a7-af25-57a29dd6229c.c000.snappy.parquet"
+
+
+if sys.version_info.major > 2:
+
+        try:
+            from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+        except ImportError:
+            subprocess.call([sys.executable, "-m", "pip", "install", 'azure-storage-blob'])
+        finally:
+            from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+
+        AZURE_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=s00184npstastarsdetails;AccountKey=OIUNDaGvMGASTude1xXoxM59bpBbfNDprAz0422J04oBqWWOndtglVpNplu7M9UZpCjXQfhb5EKLmTmZsDzc3w==;EndpointSuffix=core.windows.net"
+
+
+        # Create the BlobServiceClient object which will be used to create a container client
+        blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+            
+        # Create a container
+        # container_name = "sriniabc"
+        # Create the container
+        # container_client = blob_service_client.create_container(container_name)
+
+        # List the blobs in the container
+        # Instantiate a ContainerClient
+        stars_container_client = blob_service_client.get_container_client("starscontainer")
+        blob_list = stars_container_client.list_blobs()
+
+        for blob in blob_list:
+            if blob.name.endswith('parquet'):
+                 print("blob name --> " + "\t" + blob.name)
+                 print("container name --> " + "\t" + blob.name)
+"blobStorageAzureSDK.py" 80L, 3275B
+
+
+
